@@ -156,15 +156,27 @@ namespace RosSharp.RosBridgeClient
             byte[] fileContents = serviceResponse.value;
             Uri resourceFileUri = new Uri((serviceReceiver.ServiceParameter).name);
 
+            bool updateFileRequestStatusAtEnd = true;
             if (IsColladaFile(resourceFileUri))
             {
-                Thread importResourceFilesThread = new Thread(() => ImportColladaTextureFiles(resourceFileUri, System.Text.Encoding.UTF8.GetString(fileContents)));
+                Thread importResourceFilesThread = new Thread(() => {
+                    try
+                    {
+                        ImportColladaTextureFiles(resourceFileUri, System.Text.Encoding.UTF8.GetString(fileContents));
+                    }
+                    finally
+                    {
+                        UpdateFileRequestStatus(resourceFileUri);
+                    }
+                });
                 importResourceFilesThread.Start();
+                updateFileRequestStatusAtEnd = false;
             }
             Thread writeTextFileThread = new Thread(() => WriteBinaryResponseToFile((string)serviceReceiver.HandlerParameter, fileContents));
             writeTextFileThread.Start();
 
-            UpdateFileRequestStatus(resourceFileUri);
+            if (updateFileRequestStatusAtEnd)
+                UpdateFileRequestStatus(resourceFileUri);
         }
 
         private void UpdateFileRequestStatus(Uri resourceFileUri)
