@@ -97,8 +97,19 @@ namespace RosSharp.Urdf
                 AssetDatabase.CreateFolder(UrdfAssetPathHandler.GetPackageRoot(), MaterialFolderName);
         }
 
+        public static string CleanMaterialName(string mat)
+        {
+            string invalid = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+            foreach (char c in invalid)
+            {
+                mat = mat.Replace(c.ToString(), "_");
+            }
+            return mat;
+        }
+
         public static string GetMaterialAssetPath(string materialName)
         {
+            materialName = CleanMaterialName(materialName);
             return Path.Combine(packageRoot, MaterialFolderName, Path.GetFileName(materialName) + ".mat");
         }
 
