@@ -204,7 +204,11 @@ namespace RosSharp.RosBridgeClient
             XElement root = XElement.Parse(fileContents);
             return (from x in root.Elements()
                     where x.Name.LocalName == "library_images"
-                    select new Uri(resourceFileUri, x.Element(xmlns + "image").Element(xmlns + "init_from").Value)).ToList();
+                    let image_el = x.Element(xmlns + "image")
+                    where image_el != null
+                    let init_from_el = image_el.Element(xmlns + "init_from")
+                    where init_from_el.Value != null
+                    select new Uri(resourceFileUri, init_from_el.Value)).ToList();
         }
 
         private void ReceiveTextureFiles(ServiceReceiver<file_server.GetBinaryFileRequest, file_server.GetBinaryFileResponse> serviceReceiver, file_server.GetBinaryFileResponse serviceResponse)
